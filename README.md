@@ -4,7 +4,7 @@
 
 - 서비스 주소: https://yourpooprainbow.vercel.app
 - 작업 브랜치: `feature/service-frontend-backend`
-- 개발 인원 및 기간: 2명, 4주
+- 개발 인원 및 기간: 2명, 3주
 
 ## 핵심 기능
 
