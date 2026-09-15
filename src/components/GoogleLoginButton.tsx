@@ -1,19 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { User } from '../types/auth';
-import { signInWithGoogle } from '../services/authService';
+import { signInWithGoogleCredential } from '../services/authService';
 
 type GoogleCredentialResponse = { credential: string };
-type GoogleAccounts = {
-  id: {
-    initialize: (config: { client_id: string; callback: (response: GoogleCredentialResponse) => void }) => void;
-    renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
-  };
-};
-
-declare global {
-  interface Window { google?: { accounts: GoogleAccounts } }
-}
-
 export default function GoogleLoginButton({ onSuccess }: { onSuccess: (user: User) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState('');
@@ -25,7 +14,7 @@ export default function GoogleLoginButton({ onSuccess }: { onSuccess: (user: Use
       if (!window.google || !containerRef.current) return;
       window.google.accounts.id.initialize({
         client_id: clientId,
-        callback: ({ credential }) => void signInWithGoogle(credential).then(onSuccess).catch((reason: unknown) => {
+        callback: ({ credential }) => void signInWithGoogleCredential(credential).then(onSuccess).catch((reason: unknown) => {
           setError(reason instanceof Error ? reason.message : 'Google 로그인에 실패했습니다.');
         }),
       });
