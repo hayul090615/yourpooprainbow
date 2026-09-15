@@ -1,0 +1,7 @@
+import { Router } from 'express';
+import { pool } from '../db/pool';
+import { requireAuth, type AuthUser } from '../services/auth-service';
+
+export const notificationsRouter = Router();
+notificationsRouter.get('/', requireAuth, async (_request, response, next) => { try { const user = response.locals.authUser as AuthUser; const result = await pool.query(`SELECT notifications.id, COALESCE(feedback.title, notifications.title) AS title, CASE WHEN feedback.id IS NULL THEN notifications.message ELSE '내가 보낸 내용: ' || feedback.message || E'\\n\\n관리자 답변: ' || COALESCE(feedback.admin_reply, notifications.message) END AS message, notifications.created_at AS "createdAt", notifications.read_at AS "readAt" FROM public.user_notifications notifications LEFT JOIN public.feedback feedback ON feedback.id = notifications.feedback_id WHERE notifications.recipient_user_id = $1 ORDER BY notifications.created_at DESC LIMIT 30;`, [user.id]); response.json({ notifications: result.rows }); } catch (error) { next(error); } });
+notificationsRouter.patch('/:id', requireAuth, async (request, response, next) => { const id = Array.isArray(request.params.id) ? request.params.id[0] ?? '' : request.params.id; if (!/^[1-9]\d*$/.test(id)) { response.status(400).json({ message: '알림 번호가 올바르지 않습니다.' }); return; } try { const user = response.locals.authUser as AuthUser; await pool.query('UPDATE public.user_notifications SET read_at = CURRENT_TIMESTAMP WHERE id = $1 AND recipient_user_id = $2;', [id, user.id]); response.status(204).send(); } catch (error) { next(error); } });

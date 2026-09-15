@@ -1,0 +1,11 @@
+{
+  "name": "내 주변 화장실",
+  "short_name": "화장실 찾기",
+  "description": "현재 위치 주변의 공중화장실을 빠르게 찾는 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff7f4",
+  "theme_color": "#ff5d4c",
+  "lang": "ko-KR",
+  "icons": [{ "src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="48" viewBox="0 0 40 48" role="img" aria-labelledby="title">
+  <title id="title">Access key required toilet</title>
+  <path fill="#F97316" stroke="#C2410C" stroke-width="2" d="M20 1C9.5 1 1 9.5 1 20c0 14.2 19 27 19 27s19-12.8 19-27C39 9.5 30.5 1 20 1Z"/>
+  <circle cx="20" cy="20" r="13" fill="#FFF7ED"/>
+  <path fill="#C2410C" d="M26.7 12.3a6.5 6.5 0 0 0-9.8 8.2l-6.6 6.6v3.6h3.6l1.8-1.8 1.8 1.8 2.4-2.4-1.8-1.8 1.5-1.5a6.5 6.5 0 0 0 7.1-12.7Zm-2.4 6.1a2.3 2.3 0 1 1 0-3.3 2.3 2.3 0 0 1 0 3.3Z"/>
+</svg>

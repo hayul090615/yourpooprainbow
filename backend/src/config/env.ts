@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const databaseUrl = process.env.DATABASE_URL?.trim() || undefined;
+const databaseUrl = process.env.DATABASE_URL?.trim();
 
 function getEnv(name: string, fallback?: string): string {
   const value = process.env[name] ?? fallback;
@@ -27,11 +27,25 @@ function getPort(): number {
 export const env = {
   db: {
     connectionString: databaseUrl,
-    host: getEnv('DB_HOST', 'localhost'),
-    port: getPort(),
-    name: getEnv('DB_NAME', 'geuphaeyo'),
-    user: getEnv('DB_USER', 'postgres'),
-    password: getEnv('DB_PASSWORD', databaseUrl ? 'unused' : undefined),
+    host: databaseUrl ? undefined : getEnv('DB_HOST', 'localhost'),
+    port: databaseUrl ? undefined : getPort(),
+    name: databaseUrl ? undefined : getEnv('DB_NAME', 'geuphaeyo'),
+    user: databaseUrl ? undefined : getEnv('DB_USER', 'postgres'),
+    password: databaseUrl ? undefined : process.env.DB_PASSWORD?.trim(),
+    configured: Boolean(databaseUrl || process.env.DB_PASSWORD?.trim()),
     ssl: process.env.DB_SSL === 'true'
-  }
+  },
+  googleClientId: process.env.GOOGLE_CLIENT_ID?.trim() ?? '',
+  adminEmails: (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
+  kakaoRestApiKey: process.env.KAKAO_REST_API_KEY?.trim() ?? '',
+  frontendOrigins: getEnv(
+    'FRONTEND_ORIGINS',
+    'http://localhost:5173,https://yourpooprainbow.vercel.app'
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
 } as const;

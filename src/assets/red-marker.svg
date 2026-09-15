@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="44" viewBox="0 0 36 44" role="img" aria-labelledby="title">
+  <title id="title">Directions destination</title>
+  <path fill="#DC2626" stroke="#991B1B" stroke-width="2" d="M18 1C8.6 1 1 8.6 1 18c0 12.8 17 25 17 25s17-12.2 17-25C35 8.6 27.4 1 18 1Z"/>
+  <circle cx="18" cy="18" r="7" fill="#DC2626"/>
+  <text x="18" y="21" text-anchor="middle" fill="#FFF" font-size="8.5" font-family="Arial, sans-serif" font-weight="700">도착</text>
+</svg>

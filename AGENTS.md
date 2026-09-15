@@ -16,11 +16,13 @@
 - Backend: Node.js, Express, TypeScript (팀원 담당)
 - Database: PostgreSQL (팀원 담당)
 
-현재 저장소는 아직 정적 HTML/CSS/JavaScript 구조다. React + Vite + TypeScript 전환은 명시적으로 요청받았을 때만 진행한다.
+현재 프론트엔드는 React + Vite + TypeScript로 전환되어 있으며, 진입점과 주요 코드는 `src` 아래에 있다. 루트에 남아 있는 기존 파일이나 중복 구조는 요청 없이 삭제하거나 재구성하지 않는다.
+
+`backend` 디렉터리에는 팀원이 개발한 Express + TypeScript + PostgreSQL 코드가 있다. 프론트엔드 작업 중에는 참고만 하고, 명시적인 요청 없이 수정하지 않는다.
 
 ## 프론트엔드 구조
 
-React 전환 후 다음 구조를 사용한다.
+현재 React 프론트엔드는 다음 구조를 사용한다.
 
 - `src/components`: 재사용 가능한 UI 컴포넌트
 - `src/pages`: 페이지 단위 컴포넌트
@@ -53,5 +55,7 @@ React 전환 후 다음 구조를 사용한다.
 - 기존 코드를 확인한 후 필요한 부분만 수정하며, 기존 기능을 임의로 삭제하지 않는다.
 - 요청하지 않은 기능·라이브러리를 추가하지 않는다. 새 라이브러리가 필요하면 설치 전에 알린다.
 - 파일 삭제 전에는 반드시 확인을 받는다.
-- 작업 후 TypeScript 오류와 빌드 오류를 확인한다.
+- 프론트엔드 작업 후 `npm run build`로 TypeScript 오류와 Vite 빌드 오류를 확인한다.
+- 백엔드를 요청받아 수정한 경우에만 `npm --prefix backend run typecheck`와 필요한 백엔드 검증을 수행한다.
+- `.env`와 `.env.local`의 비밀값을 출력하거나 커밋하지 않는다. 새 환경변수가 필요하면 예시 값만 `.env.example`에 반영한다.
 - 완료 시 수정한 파일과 변경 내용을 짧게 요약한다.

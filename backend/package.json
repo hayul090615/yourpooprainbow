@@ -13,9 +13,15 @@
     "db:schema": "psql -h localhost -U postgres -d geuphaeyo -f sql/002_create_tables.sql",
     "db:seed": "psql -h localhost -U postgres -d geuphaeyo -f sql/003_seed_restrooms.sql",
     "db:migrate": "psql -h localhost -U postgres -d geuphaeyo -f sql/004_migrate_to_toilets.sql",
-    "db:requests": "psql -h localhost -U postgres -d geuphaeyo -f sql/005_create_service_requests.sql",
-    "migrate:deploy": "node dist/db/migrate.js",
-    "db:setup": "npm run db:create && npm run db:schema && npm run db:seed",
+    "db:migrate:users": "psql -h localhost -U postgres -d geuphaeyo -f sql/005_create_users.sql",
+    "db:migrate:auth": "psql -h localhost -U postgres -d geuphaeyo -f sql/006_create_auth_and_feedback.sql",
+    "db:migrate:feedback-types": "psql -h localhost -U postgres -d geuphaeyo -f sql/007_add_toilet_update_feedback_type.sql",
+    "db:migrate:reviews": "psql -h localhost -U postgres -d geuphaeyo -f sql/008_create_toilet_reviews.sql",
+    "db:migrate:feedback-interactions": "psql -h localhost -U postgres -d geuphaeyo -f sql/009_add_feedback_likes_replies_and_notifications.sql",
+    "db:migrate:review-likes": "psql -h localhost -U postgres -d geuphaeyo -f sql/010_create_toilet_review_likes.sql",
+    "db:migrate:presence": "psql -h localhost -U postgres -d geuphaeyo -f sql/011_create_toilet_direction_presence.sql",
+    "db:setup": "npm run db:create && npm run db:schema && npm run db:seed && npm run db:migrate:users && npm run db:migrate:auth && npm run db:migrate:feedback-types && npm run db:migrate:reviews && npm run db:migrate:feedback-interactions && npm run db:migrate:review-likes && npm run db:migrate:presence",
+    "admin:create": "tsx src/scripts/create-admin.ts",
     "start": "node dist/server.js"
   },
   "engines": {
@@ -25,13 +31,11 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "google-auth-library": "^11.0.2",
-    "nodemailer": "^9.0.5",
     "pg": "^8.23.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^26.2.0",
-    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.23.1",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"

@@ -1,100 +1,40 @@
 import express from 'express';
-import { OAuth2Client } from 'google-auth-library';
-import nodemailer from 'nodemailer';
+import { env } from './config/env';
 import { pool } from './db/pool';
+import { directionsRouter } from './routes/directions';
+import { directionsPresenceRouter } from './routes/directions-presence';
+import { authRouter } from './routes/auth';
+import { feedbackRouter } from './routes/feedback';
+import { toiletReviewsRouter } from './routes/toilet-reviews';
+import { notificationsRouter } from './routes/notifications';
+import { requireAdmin } from './services/auth-service';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClient = new OAuth2Client(googleClientId);
-const requestRecipients = ['hayul9888@gmail.com', 'sg8111320@gmail.com'] as const;
-const mailTransport = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD
-  ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT ?? 587),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
-    })
-  : null;
 
 app.use(express.json());
-app.use((_request, response, next) => {
-  const origin = _request.headers.origin;
-  const allowedOrigin = !origin || origin === process.env.FRONTEND_ORIGIN || /^http:\/\/localhost:\d+$/.test(origin) || /^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin);
-  if (origin && allowedOrigin) response.setHeader('Access-Control-Allow-Origin', origin);
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
-  if (_request.method === 'OPTIONS') { response.status(204).send(); return; }
+app.use((request, response, next) => {
+  const origin = request.headers.origin;
+  if (origin && env.frontendOrigins.includes(origin)) {
+    response.setHeader('Access-Control-Allow-Origin', origin);
+    response.setHeader('Vary', 'Origin');
+    response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  }
+  if (request.method === 'OPTIONS') {
+    response.status(204).send();
+    return;
+  }
   next();
 });
 
-app.get('/health', async (_request, response) => {
-  try {
-    await pool.query('SELECT 1;');
-    response.json({ status: 'ok' });
-  } catch {
-    response.status(503).json({ status: 'unavailable' });
-  }
-});
-
-app.post('/auth/google', async (request, response) => {
-  const credential = request.body?.credential;
-  if (!googleClientId) { response.status(503).json({ message: 'Google 로그인이 아직 설정되지 않았습니다.' }); return; }
-  if (typeof credential !== 'string' || credential.length > 5000) { response.status(400).json({ message: '잘못된 Google 인증 정보입니다.' }); return; }
-  try {
-    const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: googleClientId });
-    const payload = ticket.getPayload();
-    if (!payload?.sub || !payload.email || payload.email_verified !== true) {
-      response.status(401).json({ message: '확인되지 않은 Google 계정입니다.' });
-      return;
-    }
-    response.json({ id: `google:${payload.sub}`, email: payload.email, nickname: payload.name || payload.email.split('@')[0] });
-  } catch {
-    response.status(401).json({ message: 'Google 인증이 만료되었거나 유효하지 않습니다.' });
-  }
-});
-
-app.post('/requests', async (request, response) => {
-  const { category, message, recipientEmail } = request.body ?? {};
-  if (!['feature', 'data', 'bug', 'other'].includes(category)) { response.status(400).json({ message: '요청 유형을 확인해 주세요.' }); return; }
-  if (typeof message !== 'string' || message.trim().length < 10 || message.length > 1000) { response.status(400).json({ message: '요청 내용은 10~1000자로 입력해 주세요.' }); return; }
-  if (typeof recipientEmail !== 'string' || !requestRecipients.includes(recipientEmail as typeof requestRecipients[number])) {
-    response.status(400).json({ message: '받는 사람을 선택해 주세요.' }); return;
-  }
-  try {
-    const result = await pool.query(
-      'INSERT INTO public.service_requests (category, message, reply_email) VALUES ($1, $2, $3) RETURNING id, created_at;',
-      [category, message.trim(), null],
-    );
-    if (!mailTransport) {
-      console.warn('Request saved, but email was not sent because SMTP is not configured.');
-    } else {
-      const categoryLabels: Record<string, string> = {
-        feature: '기능 제안', data: '화장실 정보 수정', bug: '오류 신고', other: '기타',
-      };
-      try {
-        await mailTransport.sendMail({
-          from: process.env.SMTP_FROM ?? process.env.SMTP_USER,
-          to: recipientEmail,
-          subject: `[급해요화장실] 새 요청사항 - ${categoryLabels[category]}`,
-          text: [
-            `요청 번호: ${result.rows[0].id}`,
-            `유형: ${categoryLabels[category]}`,
-            `받는 사람: ${recipientEmail}`,
-            '',
-            message.trim(),
-          ].join('\n'),
-        });
-      } catch (mailError) {
-        console.error('Request saved, but notification email failed:', mailError);
-      }
-    }
-    response.status(201).json(result.rows[0]);
-  } catch (error) {
-    console.error('Failed to create service request:', error);
-    response.status(500).json({ message: '요청사항을 저장하지 못했습니다.' });
-  }
-});
+app.use('/api/directions', directionsRouter);
+app.use('/api/directions', directionsPresenceRouter);
+app.use('/api/directions-presence', directionsPresenceRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/feedback', feedbackRouter);
+app.use('/api/toilet-reviews', toiletReviewsRouter);
+app.use('/api/notifications', notificationsRouter);
 
 type ToiletInput = Record<string, string | number | boolean | null>;
 type InputMode = 'create' | 'update';
@@ -107,6 +47,10 @@ function hasOwn(object: Record<string, unknown>, key: string): boolean {
 
 function isValidToiletId(id: string): boolean {
   return /^[1-9]\d*$/.test(id) && BigInt(id) <= maxBigInt;
+}
+
+function getRouteId(value: string | string[]): string {
+  return Array.isArray(value) ? value[0] ?? '' : value;
 }
 
 function parseToiletInput(
@@ -253,7 +197,7 @@ app.get('/toilets', async (_request, response) => {
 });
 
 app.get('/toilets/:id', async (request, response) => {
-  const { id } = request.params;
+  const id = getRouteId(request.params.id);
 
   if (!isValidToiletId(id)) {
     response.status(400).json({ message: 'Invalid toilet id' });
@@ -279,7 +223,7 @@ app.get('/toilets/:id', async (request, response) => {
   }
 });
 
-app.post('/toilets', async (request, response) => {
+app.post('/toilets', requireAdmin, async (request, response) => {
   const parsedInput = parseToiletInput(request.body);
 
   if ('error' in parsedInput) {
@@ -315,8 +259,8 @@ app.post('/toilets', async (request, response) => {
   }
 });
 
-app.patch('/toilets/:id', async (request, response) => {
-  const { id } = request.params;
+app.patch('/toilets/:id', requireAdmin, async (request, response) => {
+  const id = getRouteId(request.params.id);
 
   if (!isValidToiletId(id)) {
     response.status(400).json({ message: 'Invalid toilet id' });
@@ -376,8 +320,8 @@ app.patch('/toilets/:id', async (request, response) => {
   }
 });
 
-app.delete('/toilets/:id', async (request, response) => {
-  const { id } = request.params;
+app.delete('/toilets/:id', requireAdmin, async (request, response) => {
+  const id = getRouteId(request.params.id);
 
   if (!isValidToiletId(id)) {
     response.status(400).json({ message: 'Invalid toilet id' });
