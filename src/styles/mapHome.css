@@ -1329,6 +1329,7 @@
 .map-result-row .map-result-item{border-bottom:0}
 .map-result-directions{justify-self:end;min-height:36px;margin-right:12px;padding:7px 15px;border:1px solid #3977ff;border-radius:8px;background:#3977ff;color:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
 .map-result-directions:hover{background:#245bd6}
+.map-result-panel.is-directions-hidden{display:none}
 .map-result-directions:focus-visible{outline:3px solid #17202a;outline-offset:2px}
 [data-theme='dark'] .map-result-row{border-color:#344150}
 [data-theme='dark'] .map-result-directions:focus-visible{outline-color:#fff}

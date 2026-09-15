@@ -39,7 +39,7 @@ const NEARBY_SEARCH_GRID_SIZE = 1;
 const SEARCH_CONCURRENCY = 10;
 const SEARCH_REQUEST_TIMEOUT_MS = 2_500;
 const SEARCH_DEBOUNCE_MS = 350;
-const MAX_MAP_MARKERS = 180;
+const MAX_MAP_MARKERS = 500;
 const SEOUL_MAP_LEVEL = 8;
 const NEARBY_MAP_LEVEL = 5;
 const MAX_AUTO_LOCATION_ACCURACY_METERS = 150;
@@ -1061,7 +1061,7 @@ function LoadedMap({ appKey, toilets, query = '', user, onLoginRequired }: MapPr
 
           {!directionsTarget && <><button type="button" className="map-current-location-button" aria-label="현재 위치로 이동" onClick={() => requestCurrentLocation()}>⌖</button><button type="button" className="map-add-toilet-button" aria-label="화장실 추가" onClick={() => { if (!user) { onLoginRequired(); return; } setIsAddingToilet((active) => !active); setStatusMessage(isAddingToilet ? '화장실 추가를 취소했습니다.' : '지도를 클릭해 화장실 위치를 선택하세요.'); }}>+</button></>}
           {isResultPanelOpen && (
-            <aside id="map-result-panel" className="map-result-panel" aria-label="가까운 화장실 목록">
+            <aside id="map-result-panel" className={`map-result-panel${directionsTarget ? ' is-directions-hidden' : ''}`} aria-label="가까운 화장실 목록">
             <div className="map-result-heading">
               <div>
                 <strong>{directionsTarget ? '길찾기 목적지' : '가까운 화장실'}</strong>
